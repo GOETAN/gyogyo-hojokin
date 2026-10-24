@@ -70,14 +70,28 @@ test('詳細に やさしい説明・締切・補助の割合と上限（原文�
   await context.close();
 });
 
-test('出典リンクは https・新しいタブ・参照元を送らない。外のサイトであることを書き添える', async () => {
+test('出典リンクは https・同じタブ・参照元を送らない。外のサイトであることを書き添える', async () => {
   const { context, page } = await site.open('#detail/a/equipment/vessel/group');
   const link = page.locator('#screen-detail [data-source-link]');
   assert.equal(await link.getAttribute('href'), 'https://example.com/a');
-  assert.equal(await link.getAttribute('target'), '_blank');
-  assert.match(await link.getAttribute('rel'), /noopener/);
+  assert.equal(await link.getAttribute('target'), null);
   assert.match(await link.getAttribute('rel'), /noreferrer/);
-  assert.match(await page.locator('#screen-detail [data-source-note]').innerText(), /外の サイト（example\.com）が ひらきます/);
+  assert.match(await page.locator('#screen-detail [data-source-note]').innerText(), /外の サイト（example\.com）に うつります/);
+  await context.close();
+});
+
+test('出典のページから「戻る」で、同じ詳細の画面に戻る', async () => {
+  const { context, page } = await site.open('#detail/a/equipment/vessel/group');
+  // 外部には出ない。出典のページは偽物を返す
+  await page.route('https://example.com/**', (route) =>
+    route.fulfill({ contentType: 'text/html', body: '<p>source</p>' }));
+  await page.waitForTimeout(AFTER_SCREEN_CHANGE_MS);
+  await Promise.all([page.waitForURL('https://example.com/a'), page.locator('#screen-detail [data-source-link]').tap()]);
+  assert.equal(context.pages().length, 1, '新しいタブは開かない');
+  await page.goBack();
+  await waitScreen(page, 'detail');
+  assert.equal(new URL(page.url()).hash, '#detail/a/equipment/vessel/group');
+  assert.equal(await field(page, 'plain_name'), 'テスト a');
   await context.close();
 });
 

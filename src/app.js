@@ -155,7 +155,8 @@ import { selectResults, todayJST, isStale, isListed, matches, formatDate } from 
     detail.querySelector('[data-upcoming]').hidden = s.status !== 'upcoming';
     detail.querySelector('[data-stale]').hidden = !isStale(s, today);
 
-    // 出典。スキーマで https に限っているが、念のためここでも https 以外はリンクにしない。
+    // 出典。同じタブで開く（新しいタブだと、iPhone ではタブを切り替えないと戻れず迷いやすいため）。
+    // スキーマで https に限っているが、念のためここでも https 以外はリンクにしない。
     const link = detail.querySelector('[data-source-link]');
     const host = detail.querySelector('[data-f="source_host"]');
     let url;
