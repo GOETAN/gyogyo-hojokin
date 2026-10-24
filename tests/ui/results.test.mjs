@@ -52,11 +52,14 @@ test('当てはまるものを締切の近い順に出す（締切切れ・close
 });
 
 test('「当てはまるかもしれません。漁協に相談」を出し、「対象です」と断定しない', async () => {
-  for (const path of ['#result/equipment/aquaculture/individual', '#result/processing_sales/vessel/individual']) {
+  for (const [path, expected] of [
+    ['#result/equipment/aquaculture/individual', /当てはまるかもしれません。使えるかどうかは、漁協に 相談して ください。/],
+    // 0 件のときの「ほかの補助金」は、こたえに合わなかったもの。「当てはまるかもしれません」とは言わない
+    ['#result/processing_sales/vessel/individual', /あなたの こたえには 合いませんでしたが、漁協に 相談すると 使えるものが あるかもしれません。/],
+  ]) {
     const { context, page } = await site.open(path);
     const text = await page.locator('#screen-result').innerText();
-    assert.match(text, /当てはまるかもしれません。/);
-    assert.match(text, /漁協に 相談して ください/);
+    assert.match(text, expected);
     for (const ng of ['対象です', '対象になります', '申請できます', '使えます']) {
       assert.ok(!text.includes(ng), `「${ng}」が含まれています`);
     }
