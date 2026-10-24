@@ -1,0 +1,134 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gyogyo-hojokin.local/schema.json",
+  "title": "補助金あんないサイトのデータ",
+  "$comment": "定義の唯一の正。選択肢の値（purpose / fishery_type / applicant）を増減するときは、ここと data/questions.yaml を同時に直す。整合は tools/lib/data.mjs が検査する。",
+  "$defs": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "description": "YYYY-MM-DD。YAML では引用符で囲まなくてよい（YAML 1.2 では文字列として読まれる）"
+    },
+    "nonEmpty": { "type": "string", "minLength": 1, "pattern": "\\S" },
+
+    "purpose": {
+      "enum": ["boat_engine", "equipment", "fuel_cost", "successor_newcomer", "processing_sales", "any"],
+      "description": "Q1 やりたいこと。any = どれでもよい（データ側だけで使う）"
+    },
+    "fishery_type": {
+      "enum": ["vessel", "aquaculture", "set_net", "shellfish_seaweed", "other", "any"],
+      "description": "Q2 漁業の種類。any = どれでもよい（データ側だけで使う）"
+    },
+    "applicant": {
+      "enum": ["individual", "group", "any"],
+      "description": "Q3 だれと取り組むか。any = どれでもよい（データ側だけで使う）"
+    },
+
+    "subsidy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "name", "plain_name", "level", "provider", "summary_plain", "match",
+        "amount_note", "deadline", "contact_note", "source_url", "checked_date",
+        "checked_by", "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "description": "ファイル名（拡張子なし）と一致させる"
+        },
+        "name": { "$ref": "#/$defs/nonEmpty", "description": "正式名称（原文どおり）" },
+        "plain_name": { "$ref": "#/$defs/nonEmpty", "description": "やさしい呼び名" },
+        "level": { "enum": ["national", "prefecture", "city"] },
+        "provider": { "$ref": "#/$defs/nonEmpty", "description": "実施機関" },
+        "summary_plain": { "$ref": "#/$defs/nonEmpty", "description": "何に使えるかを2〜3文で" },
+        "match": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["purposes", "fishery_types", "applicant"],
+          "properties": {
+            "purposes": {
+              "type": "array", "minItems": 1, "uniqueItems": true,
+              "items": { "$ref": "#/$defs/purpose" }
+            },
+            "fishery_types": {
+              "type": "array", "minItems": 1, "uniqueItems": true,
+              "items": { "$ref": "#/$defs/fishery_type" }
+            },
+            "applicant": {
+              "type": "array", "minItems": 1, "uniqueItems": true,
+              "items": { "$ref": "#/$defs/applicant" }
+            }
+          }
+        },
+        "amount_note": {
+          "$ref": "#/$defs/nonEmpty",
+          "description": "補助率・上限。原文どおり。不明なら \"要確認\""
+        },
+        "deadline": {
+          "oneOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }],
+          "description": "締切。null = 随時／未定"
+        },
+        "contact_note": { "$ref": "#/$defs/nonEmpty", "description": "どこに相談するか" },
+        "source_url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://",
+          "description": "出典。https のみ"
+        },
+        "checked_date": { "$ref": "#/$defs/date", "description": "人が出典を確認した日" },
+        "checked_by": {
+          "$ref": "#/$defs/nonEmpty",
+          "description": "確認者。公開リポジトリなので個人のフルネームではなく役割名・イニシャル等にする。画面には出さない"
+        },
+        "status": { "enum": ["open", "upcoming", "closed"] }
+      }
+    },
+
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kumiai_name", "phone", "hours"],
+      "properties": {
+        "kumiai_name": { "$ref": "#/$defs/nonEmpty", "description": "協力漁協の名前" },
+        "phone": {
+          "type": "string",
+          "pattern": "^0[0-9]{1,4}-[0-9]{1,4}-[0-9]{3,4}$",
+          "description": "ハイフン区切りの電話番号（例の形式: 0XX-XXX-XXXX）"
+        },
+        "hours": { "$ref": "#/$defs/nonEmpty", "description": "受付時間（例: 平日 9時〜17時）" }
+      }
+    },
+
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "text", "options"],
+        "properties": {
+          "key": { "enum": ["purposes", "fishery_types", "applicant"] },
+          "text": { "$ref": "#/$defs/nonEmpty" },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["value", "label"],
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "description": "match の値。unknown = 「わからない」（その質問を条件にしない）"
+                },
+                "label": { "$ref": "#/$defs/nonEmpty" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
