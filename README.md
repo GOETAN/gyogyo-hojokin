@@ -19,18 +19,28 @@ data/schema.json          # データ定義の唯一の正（JSON Schema 2020-12
 data/site.yaml            # 協力漁協の名前・電話・受付時間（未記入だと検証が通らない）
 data/questions.yaml       # 質問と選択肢。value は schema.json と一致させる
 data/subsidies/*.yaml     # 補助金 1 件 1 ファイル。ファイル名 = id
+src/index.html            # 画面のひな形。{{key}} はビルド時に site.yaml の値（エスケープ済み）で置き換える
+src/style.css             # 見た目。寸法は rem（端末の文字サイズ設定に追従する）
 tools/lib/data.mjs        # 読み込みと検証。validate とビルドが共有する
 tools/validate.mjs        # 検証 CLI。エラーがあれば終了コード 1
-tests/                    # 検証ロジックのテスト（架空データのみ）
+tools/build.mjs           # dist/ に静的サイトを作る。検証エラーがあれば何も書き出さない
+tests/*.test.mjs          # 検証・ビルドのテスト（架空データのみ）
+tests/ui/                 # 360px 幅での画面チェック（Playwright + axe-core）
 ```
 
 ## 検証
 
 ```sh
 npm ci
-npm test           # 検証ロジックのテスト
+npm test           # 検証・ビルドのテスト
 npm run validate   # data/ の検証
+npm run build      # dist/ に書き出す
+npm run test:ui    # 画面チェック（初回は npx playwright install chromium が必要）
 ```
+
+`test:ui` が見るのは、360px 幅での横スクロール・文字の大きさ・タップ領域とその間隔・
+WCAG 2.1 A/AA（axe-core。コントラストを含む）・外部通信と Cookie がないこと。
+実機（高齢者のスマホ）での確認の代わりにはならない。
 
 ## 補助金データの書き方
 

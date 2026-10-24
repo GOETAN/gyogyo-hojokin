@@ -1,0 +1,102 @@
+/* 寸法は rem で書く。端末の文字サイズ設定を大きくしている人には、そのぶん大きく出る。
+   既定（1rem = 16px）での最小値: 本文 20px / ボタン内 22px / タップ領域 56px / ボタン間 12px */
+
+:root {
+  --text: #1a1a1a;
+  --muted: #3d3d3d;
+  --bg: #ffffff;
+  --line: #8a8a8a;
+  --primary: #0a4a85;
+  --tel: #14632a;
+  --focus: #b35c00;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+  font-size: 1.25rem;        /* 20px */
+  line-height: 1.7;
+  overflow-wrap: anywhere;   /* 長い語でも横スクロールを出さない */
+}
+
+[hidden] { display: none !important; }
+
+.wrap {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+h1 {
+  font-size: 1.75rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+p { margin: 0; }
+
+rt { font-size: 0.6em; }
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;              /* ボタン間 12px */
+}
+
+.btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.5rem;        /* 56px */
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 1.375rem;       /* 22px */
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+}
+
+.btn:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+
+.btn-tel {
+  background: var(--tel);
+  color: #fff;
+  min-height: 4.5rem;
+}
+
+.btn-sub { font-weight: 400; }
+
+.btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 3px solid var(--text);
+}
+
+.note { color: var(--muted); }
+
+.actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--line);
+}
+
+.hours { text-align: center; }

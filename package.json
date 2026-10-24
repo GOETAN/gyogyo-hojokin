@@ -6,11 +6,17 @@
   "description": "漁業者向け 補助金あんないサイト（仮称）。静的サイト",
   "scripts": {
     "validate": "node tools/validate.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "build": "node tools/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:ui": "node --test tests/ui/*.test.mjs"
   },
   "dependencies": {
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "playwright": "1.63.0"
   }
 }
