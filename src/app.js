@@ -2,10 +2,11 @@
 //   #top                     トップ
 //   #q2/equipment            2問目。1問目の答えが equipment
 //   #result/a/b/c            結果。3問の答え
+//   #detail/<id>/a/b/c       詳細。補助金の id と 3問の答え（もどる で結果に戻るため）
 // ハッシュに持つので、スマホの「戻る」で前の質問に戻れ、再読み込みしても答えが消えない。
 // Cookie・localStorage は使わない。
 
-import { selectResults, todayJST, isStale, formatDate } from './match.js';
+import { selectResults, todayJST, isStale, isListed, matches, formatDate } from './match.js';
 
 {
   const screens = [...document.querySelectorAll('main > .screen')];
@@ -15,6 +16,7 @@ import { selectResults, todayJST, isStale, formatDate } from './match.js';
   const restart = document.querySelector('[data-restart]');
   const subsidies = JSON.parse(document.getElementById('subsidies-data').textContent);
   const result = document.getElementById('screen-result');
+  const detail = document.getElementById('screen-detail');
   const baseTitle = document.title;
 
   // 各質問で選べる値。ハッシュを書き換えられても、知らない値は受け付けない。
@@ -23,31 +25,43 @@ import { selectResults, todayJST, isStale, formatDate } from './match.js';
 
   const hashFor = (screen, answers) => '#' + [screen, ...answers].join('/');
 
-  // ハッシュを読んで { id, answers } にする。おかしなハッシュはトップ扱い。
+  const answersValid = (answers, n) => answers.length === n && answers.every((a, i) => allowed[i].has(a));
+
+  // ハッシュを読んで { id, step, answers } にする。おかしなハッシュはトップ扱い。
+  // 詳細の補助金が見つからない（閲覧日で締切を過ぎた等）ときは結果画面に戻す。
   function parse(hash) {
     const [id = '', ...answers] = decodeURIComponent(hash.replace(/^#/, '')).split('/');
+    if (id === 'detail') {
+      const [subsidyId, ...rest] = answers;
+      if (!answersValid(rest, total)) return { id: 'top', step: 0, answers: [] };
+      const subsidy = subsidies.find((s) => s.id === subsidyId && isListed(s, todayJST()));
+      return subsidy
+        ? { id: 'detail', step: total + 2, answers: rest, subsidy }
+        : { id: 'result', step: total + 1, answers: rest, fallback: true };
+    }
     const step = id === 'result' ? total + 1 : /^q\d+$/.test(id) ? Number(id.slice(1)) : 0;
-    const valid = step >= 1 && step <= total + 1
-      && answers.length === step - 1
-      && answers.every((a, i) => allowed[i].has(a));
+    const valid = step >= 1 && step <= total + 1 && answersValid(answers, step - 1);
     return valid ? { id, step, answers } : { id: 'top', step: 0, answers: [] };
   }
 
   function show() {
-    const { id, step, answers } = parse(location.hash);
+    const { id, step, answers, subsidy, fallback } = parse(location.hash);
     if (id === 'top' && location.hash && location.hash !== '#top') {
       history.replaceState(null, '', '#top');
     }
+    if (fallback) history.replaceState(null, '', hashFor('result', answers));
     const current = document.getElementById(`screen-${id}`);
     for (const s of screens) s.hidden = s !== current;
 
     // もどる: 1つ前の画面へ。直接このURLを開いた人でもサイトの外に出ないよう、history.back() は使わない。
     const back = current.querySelector('[data-back]');
     if (back) {
-      back.href = step <= 1 ? '#top' : hashFor(`q${step - 1}`, answers.slice(0, step - 2));
+      back.href = id === 'detail' ? hashFor('result', answers)
+        : step <= 1 ? '#top' : hashFor(`q${step - 1}`, answers.slice(0, step - 2));
     }
     if (restart) restart.hidden = id === 'top';
     if (id === 'result') renderResults(answers);
+    if (id === 'detail') renderDetail(subsidy, answers);
 
     const heading = current.querySelector('h1');
     document.title = id === 'top' ? baseTitle : `${heading.textContent.trim()}｜${baseTitle}`;
@@ -76,14 +90,19 @@ import { selectResults, todayJST, isStale, formatDate } from './match.js';
     });
   }
 
-  // 結果画面。文字はすべて textContent で入れる（データ由来の文字を HTML として解釈させない）。
+  // 画面に入れる文字はすべて textContent で入れる（データ由来の文字を HTML として解釈させない）。
+  const el = (tag, className, text) => {
+    const e = document.createElement(tag);
+    if (className) e.className = className;
+    if (text != null) e.textContent = text;
+    return e;
+  };
+  const deadlineText = (s) => (s.deadline
+    ? formatDate(s.deadline)
+    : '決まっていません（漁協に 確認して ください）');
+
+  // 結果画面。
   function renderResults(answers) {
-    const el = (tag, className, text) => {
-      const e = document.createElement(tag);
-      if (className) e.className = className;
-      if (text != null) e.textContent = text;
-      return e;
-    };
     const today = todayJST();
 
     result.querySelector('[data-answers]').replaceChildren(...answers.map((a, i) =>
@@ -91,12 +110,16 @@ import { selectResults, todayJST, isStale, formatDate } from './match.js';
 
     const card = (s, headingTag) => {
       const c = el('article', 'card');
-      c.append(el(headingTag, null, s.plain_name), el('p', null, s.summary_plain));
-      c.append(el('p', 'deadline', s.deadline
-        ? `しめきり：${formatDate(s.deadline)}`
-        : 'しめきり：決まっていません（漁協に 確認して ください）'));
+      const heading = el(headingTag, null, s.plain_name);
+      heading.id = `card-${s.id}`;
+      c.append(heading, el('p', null, s.summary_plain));
+      c.append(el('p', 'deadline', `しめきり：${deadlineText(s)}`));
       if (s.status === 'upcoming') c.append(el('p', 'upcoming', 'まだ 募集は 始まって いません'));
       if (isStale(s, today)) c.append(el('p', 'stale', '情報が古い可能性があります'));
+      const more = el('a', 'btn btn-primary', 'くわしく みる');
+      more.href = hashFor(`detail/${s.id}`, answers);
+      more.setAttribute('aria-describedby', heading.id); // どのカードの「くわしく」かを読み上げで伝える
+      c.append(more);
       return c;
     };
 
@@ -110,6 +133,38 @@ import { selectResults, todayJST, isStale, formatDate } from './match.js';
     result.querySelector('[data-hit-count]').textContent = `${hits.length}けん`;
     result.querySelector('[data-hit-list]').replaceChildren(...hits.map((s) => card(s, 'h2')));
     result.querySelector('[data-other-list]').replaceChildren(...others.map((s) => card(s, 'h3')));
+  }
+
+  // 詳細画面。
+  function renderDetail(s, answers) {
+    const today = todayJST();
+    const set = (field, text) => { detail.querySelector(`[data-f="${field}"]`).textContent = text; };
+    set('plain_name', s.plain_name);
+    set('summary_plain', s.summary_plain);
+    set('deadline', deadlineText(s));
+    set('amount_note', s.amount_note);
+    set('name', s.name);
+    set('provider', s.provider);
+    set('contact_note', s.contact_note);
+    set('checked_date', formatDate(s.checked_date));
+
+    // こたえに合ったものか（0 件のときの「ほかの補助金」から来たか）で、注意書きを結果画面と同じ文にする。
+    const matched = matches(s, answers, keys);
+    detail.querySelector('[data-notice-match]').hidden = !matched;
+    detail.querySelector('[data-notice-other]').hidden = matched;
+    detail.querySelector('[data-upcoming]').hidden = s.status !== 'upcoming';
+    detail.querySelector('[data-stale]').hidden = !isStale(s, today);
+
+    // 出典。スキーマで https に限っているが、念のためここでも https 以外はリンクにしない。
+    const link = detail.querySelector('[data-source-link]');
+    const host = detail.querySelector('[data-f="source_host"]');
+    let url;
+    try { url = new URL(s.source_url); } catch { url = null; }
+    const ok = url?.protocol === 'https:';
+    link.hidden = !ok;
+    link.href = ok ? url.href : '#';
+    host.textContent = ok ? url.hostname : '';
+    detail.querySelector('[data-source-note]').hidden = !ok;
   }
 
   window.addEventListener('hashchange', show);

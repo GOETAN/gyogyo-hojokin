@@ -153,10 +153,18 @@ h2 { font-size: 1.5rem; line-height: 1.5; margin: 1rem 0 0; text-wrap: balance; 
 .card h2, .card h3 { font-size: 1.5rem; line-height: 1.5; margin: 0 0 0.5rem; text-wrap: balance; }
 .card p + p { margin-top: 0.5rem; }
 .card .deadline { font-weight: 700; }
-.card .upcoming { color: var(--primary); font-weight: 700; }
-.card .stale {
+.upcoming { color: var(--primary); font-weight: 700; }
+.stale {
   padding: 0.5rem 0.75rem;
   background: #fff3e0;
   color: #7a3300;
   font-weight: 700;
 }
+.card .btn { margin-top: 0.75rem; }
+
+/* 詳細画面の項目。見出し（dt）と中身（dd）を縦に並べる。横並びは 360px では窮屈なため */
+.facts { margin: 0; }
+.facts > div { padding: 0.75rem 0; border-top: 2px solid var(--line); }
+.facts > div:last-child { border-bottom: 2px solid var(--line); }
+.facts dt { font-weight: 700; color: var(--muted); }
+.facts dd { margin: 0; white-space: pre-line; }  /* amount_note 等の改行を原文どおり出す */

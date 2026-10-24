@@ -62,6 +62,33 @@
 
       <a class="btn btn-secondary" data-back href="#top">もどる</a>
     </section>
+    <section id="screen-detail" class="screen stack" hidden aria-labelledby="detail-title">
+      <h1 id="detail-title" tabindex="-1" data-f="plain_name"></h1>
+      <p class="notice" data-notice-match>当てはまるかもしれません。使えるかどうかは、漁協に 相談して ください。</p>
+      <p class="notice" data-notice-other hidden>あなたの こたえには 合いませんでしたが、漁協に 相談すると 使えるものが あるかもしれません。</p>
+      <a class="btn btn-tel" href="tel:{{tel}}" data-detail-tel>
+        <span>漁協に電話する</span>
+        <span class="btn-sub">{{phone}}</span>
+      </a>
+      <p data-f="summary_plain"></p>
+      <p class="upcoming" data-upcoming hidden>まだ 募集は 始まって いません</p>
+      <p class="stale" data-stale hidden>情報が古い可能性があります</p>
+
+      <dl class="facts">
+        <div><dt>しめきり</dt><dd data-f="deadline"></dd></div>
+        <div><dt>出る お金（補助の 割合・上限）</dt><dd data-f="amount_note"></dd></div>
+        <div><dt>相談する ところ</dt><dd data-f="contact_note"></dd></div>
+        <div><dt>正式な 名前</dt><dd data-f="name"></dd></div>
+        <div><dt>実施している ところ</dt><dd data-f="provider"></dd></div>
+        <div><dt>この 情報を 確認した 日</dt><dd data-f="checked_date"></dd></div>
+      </dl>
+
+      <p data-source-note>この 情報の 出どころです。外の サイト（<span data-f="source_host"></span>）が ひらきます。むずかしい 言葉で 書かれて いることが あります。</p>
+      <a class="btn btn-secondary" data-source-link href="#" target="_blank" rel="noopener noreferrer">出どころの ページを ひらく</a>
+
+      <a class="btn btn-secondary" data-back href="#top">けっかに もどる</a>
+    </section>
+
     <script type="application/json" id="subsidies-data">{{{subsidies_json}}}</script>
   </main>
 
