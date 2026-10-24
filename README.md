@@ -21,12 +21,13 @@ data/questions.yaml       # 質問と選択肢。value は schema.json と一致
 data/subsidies/*.yaml     # 補助金 1 件 1 ファイル。ファイル名 = id
 src/index.html            # 画面のひな形。{{key}} はビルド時に site.yaml の値（エスケープ済み）で置き換える
 src/style.css             # 見た目。寸法は rem（端末の文字サイズ設定に追従する）
-src/app.js                # 画面の切り替え。状態は URL のハッシュだけに持つ（#q2/equipment など）
+src/app.js                # 画面の切り替えと結果の表示。状態は URL のハッシュだけに持つ（#q2/equipment など）
+src/match.js              # 絞り込み・締切・古さの判定。ブラウザ・ビルド・テストが共有する
 tools/lib/data.mjs        # 読み込みと検証。validate とビルドが共有する
 tools/validate.mjs        # 検証 CLI。エラーがあれば終了コード 1
 tools/build.mjs           # dist/ に静的サイトを作る。検証エラーがあれば何も書き出さない
 tests/*.test.mjs          # 検証・ビルドのテスト（架空データのみ）
-tests/ui/                 # 360px 幅での画面チェック（Playwright + axe-core）
+tests/ui/                 # 360px 幅での画面チェック（Playwright + axe-core）。結果画面は架空データで検査
 ```
 
 ## 検証
@@ -76,9 +77,12 @@ status: open                   # open | upcoming | closed
 - 各画面の上に控えめな電話リンク、下に大きな電話ボタン。上のリンクはスクロールしなくても見える
 - 文の改行は半角スペースの位置でだけ起きる（`word-break: keep-all`）。画面に出す文は語の区切りに半角スペースを入れる
 
-## 判定ルール（画面側。今後実装）
+## 判定ルール（src/match.js）
 
 - 質問どうしは AND、1 問の中の選択肢は OR。「わからない」はその質問を条件にしない
 - 締切（日本時間）を過ぎたもの・status が closed のものは一覧に出さない。締切当日は出す
 - checked_date から 90 日を超えたものは「情報が古い可能性があります」と表示
-- 0 件のときは漁協への電話と、締切内の全件を表示
+- 0 件のときは漁協への電話と、締切内の全件を表示。データ自体が 0 件なら「じゅんびして います」と電話
+- 締切の近い順。締切なし（随時・未定）は最後
+- ビルド時点で出せないもの（closed・締切切れ）は公開ファイルに含めない。締切と古さはブラウザでも閲覧日（日本時間）で判定し直す
+- `checked_by` は公開ファイルに含めない

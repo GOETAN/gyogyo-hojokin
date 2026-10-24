@@ -4,6 +4,9 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve, join, basename, relative } from 'node:path';
+import { todayJST } from '../../src/match.js';
+
+export { todayJST };
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const DATA_DIR = resolve(ROOT, 'data');
@@ -36,13 +39,6 @@ async function loadDeps() {
     }
     throw e;
   }
-}
-
-// 日本時間の今日を YYYY-MM-DD で返す。締切・確認日の判定は常に日本時間で行う。
-export function todayJST(now = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(now);
 }
 
 // ajv のエラーを人が読める日本語にする。

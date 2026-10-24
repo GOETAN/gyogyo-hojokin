@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <title>補助金あんない</title>
 <link rel="stylesheet" href="style.css">
-<script src="app.js" defer></script>
+<script type="module" src="app.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -27,10 +27,42 @@
 {{{questions}}}
 
     <section id="screen-result" class="screen stack" hidden aria-labelledby="result-title">
-      <h1 id="result-title" tabindex="-1">けっか</h1>
-      <p>（この画面は じゅんびちゅうです）</p>
+      <h1 id="result-title" tabindex="-1">さがした けっか</h1>
+      <div class="answers">
+        <p class="answers-title">あなたの こたえ</p>
+        <ul data-answers></ul>
+      </div>
+
+      <div class="stack" data-hits hidden>
+        <p class="lead">当てはまるかもしれない 補助金が <strong data-hit-count></strong> あります。</p>
+        <p class="notice">当てはまるかもしれません。使えるかどうかは、漁協に 相談して ください。</p>
+        <div class="stack" data-hit-list></div>
+      </div>
+
+      <div class="stack" data-none hidden>
+        <p class="lead">当てはまりそうな 補助金は 見つかりませんでした。</p>
+        <p>漁協に 相談すると、使えるものが 見つかるかもしれません。</p>
+      <a class="btn btn-tel" href="tel:{{tel}}">
+        <span>漁協に電話する</span>
+        <span class="btn-sub">{{phone}}</span>
+      </a>
+        <h2>ほかの 補助金</h2>
+        <p class="notice">当てはまるかもしれません。使えるかどうかは、漁協に 相談して ください。</p>
+        <div class="stack" data-other-list></div>
+      </div>
+
+      <div class="stack" data-empty hidden>
+        <p class="lead">いま ご案内できる 補助金の 情報を じゅんびして います。</p>
+        <p>漁協に 相談して ください。</p>
+      <a class="btn btn-tel" href="tel:{{tel}}">
+        <span>漁協に電話する</span>
+        <span class="btn-sub">{{phone}}</span>
+      </a>
+      </div>
+
       <a class="btn btn-secondary" data-back href="#top">もどる</a>
     </section>
+    <script type="application/json" id="subsidies-data">{{{subsidies_json}}}</script>
   </main>
 
   <nav class="actions stack" aria-label="いつでも使えるボタン">

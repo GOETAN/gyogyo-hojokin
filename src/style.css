@@ -125,3 +125,38 @@ h1:focus { outline: none; }  /* 画面切り替え時にプログラムで移す
 }
 
 .hours { text-align: center; }
+
+h2 { font-size: 1.5rem; line-height: 1.5; margin: 1rem 0 0; text-wrap: balance; }
+
+.lead { font-weight: 700; }
+
+.answers {
+  padding: 0.75rem 1rem;
+  background: #f2f2f2;
+  border-radius: 0.75rem;
+}
+.answers-title { font-weight: 700; }
+.answers ul { margin: 0; padding-left: 1.25em; }
+
+/* 「当てはまるかもしれません」は必ず目に入る位置と見た目にする（断定しないためのルール2） */
+.notice {
+  padding: 0.75rem 1rem;
+  border-left: 0.375rem solid var(--primary);
+  background: #eaf1f8;
+}
+
+.card {
+  padding: 1rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+}
+.card h2, .card h3 { font-size: 1.5rem; line-height: 1.5; margin: 0 0 0.5rem; text-wrap: balance; }
+.card p + p { margin-top: 0.5rem; }
+.card .deadline { font-weight: 700; }
+.card .upcoming { color: var(--primary); font-weight: 700; }
+.card .stale {
+  padding: 0.5rem 0.75rem;
+  background: #fff3e0;
+  color: #7a3300;
+  font-weight: 700;
+}

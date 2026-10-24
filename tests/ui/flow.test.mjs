@@ -4,7 +4,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import YAML from 'yaml';
-import { open, base, AFTER_SCREEN_CHANGE_MS } from './helpers.mjs';
+import { startSite, AFTER_SCREEN_CHANGE_MS } from './helpers.mjs';
+
+const site = await startSite();
+const { base, open } = site;
 
 const QUESTIONS = YAML.parse(readFileSync(new URL('../../data/questions.yaml', import.meta.url), 'utf8'));
 
@@ -91,7 +94,7 @@ test('「最初からやりなおす」はトップ以外で出て、押すと�
 test('電話ボタンは全画面に見えている', async () => {
   for (const path of ['', '#q1', '#q2/boat_engine', '#q3/boat_engine/vessel', '#result/boat_engine/vessel/group']) {
     const { context, page } = await open(path);
-    assert.equal(await page.isVisible('.btn-tel'), true, `画面 ${path || 'トップ'}`);
+    assert.equal(await page.isVisible('.actions .btn-tel'), true, `画面 ${path || 'トップ'}`);
     await context.close();
   }
 });

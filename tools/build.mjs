@@ -6,7 +6,8 @@
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadData, ROOT, DATA_DIR } from './lib/data.mjs';
+import { loadData, todayJST, ROOT, DATA_DIR } from './lib/data.mjs';
+import { isListed } from '../src/match.js';
 
 const SRC_DIR = resolve(ROOT, 'src');
 
@@ -37,7 +38,7 @@ function renderQuestions(questions) {
     const choices = q.options.map((o) =>
       `        <button type="button" class="btn btn-choice" data-value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</button>`,
     ).join('\n');
-    return `    <section id="screen-q${n}" class="screen stack" data-step="${n}" hidden aria-labelledby="q${n}-title">
+    return `    <section id="screen-q${n}" class="screen stack" data-step="${n}" data-key="${escapeHtml(q.key)}" hidden aria-labelledby="q${n}-title">
       <p class="progress">しつもん ${n} / ${total}</p>
       <h1 id="q${n}-title" tabindex="-1">${escapeHtml(q.text)}</h1>
       <div class="stack" role="group" aria-labelledby="q${n}-title">
@@ -48,8 +49,17 @@ ${choices}
   }).join('\n\n');
 }
 
-export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist') } = {}) {
-  const { site, questions, errors } = await loadData(dataDir);
+// 画面に渡す補助金データ。ビルド日の時点で一覧に出せないもの（closed・締切切れ）は含めない。
+// 締切はブラウザ側でも閲覧日で判定し直す（再ビルドまでの間に締切を過ぎるため）。
+// checked_by は画面に出さないので含めない。
+function subsidiesJson(subsidies, today) {
+  const out = subsidies.filter((s) => isListed(s, today)).map(({ checked_by, ...rest }) => rest);
+  // <script> の中に置くので、</script> で閉じられないよう < をエスケープする。
+  return JSON.stringify(out).replace(/</g, '\\u003c');
+}
+
+export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist'), today = todayJST() } = {}) {
+  const { site, questions, subsidies, errors } = await loadData(dataDir, { today });
   if (errors.length) {
     const lines = errors.map((e) => `✗ ${e.file} ${e.path}: ${e.msg}`);
     throw new Error(`検証エラー ${errors.length} 件。サイトは作りません。\n${lines.join('\n')}`);
@@ -62,11 +72,12 @@ export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist')
     question_count: questions.length,
   }, {
     questions: renderQuestions(questions),
+    subsidies_json: subsidiesJson(subsidies, today),
   });
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, 'index.html'), html);
-  for (const f of ['style.css', 'app.js']) {
+  for (const f of ['style.css', 'app.js', 'match.js']) {
     writeFileSync(join(outDir, f), readFileSync(join(SRC_DIR, f)));
   }
   return { outDir };

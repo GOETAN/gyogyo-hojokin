@@ -5,11 +5,16 @@
 // ハッシュに持つので、スマホの「戻る」で前の質問に戻れ、再読み込みしても答えが消えない。
 // Cookie・localStorage は使わない。
 
-(() => {
+import { selectResults, todayJST, isStale, formatDate } from './match.js';
+
+{
   const screens = [...document.querySelectorAll('main > .screen')];
   const questions = screens.filter((s) => s.dataset.step);
   const total = questions.length;
+  const keys = questions.map((q) => q.dataset.key);
   const restart = document.querySelector('[data-restart]');
+  const subsidies = JSON.parse(document.getElementById('subsidies-data').textContent);
+  const result = document.getElementById('screen-result');
   const baseTitle = document.title;
 
   // 各質問で選べる値。ハッシュを書き換えられても、知らない値は受け付けない。
@@ -42,6 +47,7 @@
       back.href = step <= 1 ? '#top' : hashFor(`q${step - 1}`, answers.slice(0, step - 2));
     }
     if (restart) restart.hidden = id === 'top';
+    if (id === 'result') renderResults(answers);
 
     const heading = current.querySelector('h1');
     document.title = id === 'top' ? baseTitle : `${heading.textContent.trim()}｜${baseTitle}`;
@@ -70,6 +76,42 @@
     });
   }
 
+  // 結果画面。文字はすべて textContent で入れる（データ由来の文字を HTML として解釈させない）。
+  function renderResults(answers) {
+    const el = (tag, className, text) => {
+      const e = document.createElement(tag);
+      if (className) e.className = className;
+      if (text != null) e.textContent = text;
+      return e;
+    };
+    const today = todayJST();
+
+    result.querySelector('[data-answers]').replaceChildren(...answers.map((a, i) =>
+      el('li', null, questions[i].querySelector(`[data-value="${CSS.escape(a)}"]`).textContent)));
+
+    const card = (s, headingTag) => {
+      const c = el('article', 'card');
+      c.append(el(headingTag, null, s.plain_name), el('p', null, s.summary_plain));
+      c.append(el('p', 'deadline', s.deadline
+        ? `しめきり：${formatDate(s.deadline)}`
+        : 'しめきり：決まっていません（漁協に 確認して ください）'));
+      if (s.status === 'upcoming') c.append(el('p', 'upcoming', 'まだ 募集は 始まって いません'));
+      if (isStale(s, today)) c.append(el('p', 'stale', '情報が古い可能性があります'));
+      return c;
+    };
+
+    const { hits, others, listedCount } = selectResults(subsidies, answers, keys, today);
+    const hitsBox = result.querySelector('[data-hits]');
+    const noneBox = result.querySelector('[data-none]');
+    const emptyBox = result.querySelector('[data-empty]');
+    hitsBox.hidden = hits.length === 0;
+    noneBox.hidden = !(hits.length === 0 && listedCount > 0);
+    emptyBox.hidden = listedCount > 0;
+    result.querySelector('[data-hit-count]').textContent = `${hits.length}けん`;
+    result.querySelector('[data-hit-list]').replaceChildren(...hits.map((s) => card(s, 'h2')));
+    result.querySelector('[data-other-list]').replaceChildren(...others.map((s) => card(s, 'h3')));
+  }
+
   window.addEventListener('hashchange', show);
   show();
-})();
+}

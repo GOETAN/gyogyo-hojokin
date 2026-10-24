@@ -7,7 +7,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, copyFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import YAML from 'yaml';
-import { loadData, todayJST, DATA_DIR } from '../tools/lib/data.mjs';
+import { loadData, DATA_DIR } from '../tools/lib/data.mjs';
 
 const TODAY = '2026-10-24';
 
@@ -155,9 +155,4 @@ test('質問に「わからない」がない・選択肢の過不足はエラ�
 test('本物の questions.yaml は schema と整合している', async () => {
   const r = await run();
   assert.ok(!r.errors.some((e) => e.file.endsWith('questions.yaml')), msgs(r));
-});
-
-test('todayJST は日本時間で日付を切り替える', () => {
-  assert.equal(todayJST(new Date('2026-10-24T14:59:59Z')), '2026-10-24');
-  assert.equal(todayJST(new Date('2026-10-24T15:00:00Z')), '2026-10-25');
 });
