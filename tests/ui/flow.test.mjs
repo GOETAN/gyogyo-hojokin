@@ -85,9 +85,10 @@ test('「最初からやりなおす」はトップ以外で出て、押すと�
   await tap(page, 'はじめる');
   assert.equal(await page.isVisible('[data-restart]'), true);
   await tap(page, '船・エンジンを 新しくしたい');
-  await Promise.all([page.waitForURL(base), page.locator('[data-restart]').tap()]);
+  await page.locator('[data-restart]').tap();
+  await page.waitForFunction(() => !document.getElementById('screen-top').hidden);
   assert.deepEqual(await visibleScreen(page), ['top']);
-  assert.equal(new URL(page.url()).hash, '');
+  assert.equal(new URL(page.url()).hash, '#top');
   await context.close();
 });
 

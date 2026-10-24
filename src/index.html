@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{{style_hash}}}; script-src {{{script_hash}}}; img-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <title>補助金あんない</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="app.js"></script>
+<style>{{{style}}}</style>
 </head>
 <body>
+{{{demo_banner}}}
 <div class="wrap">
   <header class="topbar">
     <a class="btn btn-tel-mini" href="tel:{{tel}}" aria-label="漁協に電話する {{phone}}">漁協に電話する</a>
@@ -98,8 +98,9 @@
       <span class="btn-sub">{{phone}}</span>
     </a>
     <p class="hours">{{kumiai_name}}<br>受付 {{hours}}</p>
-    <a class="btn btn-secondary" href="./" data-restart hidden>最初からやりなおす</a>
+    <a class="btn btn-secondary" href="#top" data-restart hidden>最初からやりなおす</a>
   </nav>
 </div>
+<script>{{{script}}}</script>
 </body>
 </html>

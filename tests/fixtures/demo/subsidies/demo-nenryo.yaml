@@ -1,0 +1,18 @@
+# 確認用の見本（npm run build:demo）の架空データ。実在の制度ではない。data/ に置かないこと。
+id: demo-nenryo
+name: （架空）燃油価格高騰対策事業（見本）
+plain_name: （架空）燃料代の 支援
+level: national
+provider: （架空）見本の 機関
+summary_plain: （見本の 文です）燃料代が 上がった ときに、上がった 分の 一部が 出ます。仲間と いっしょに 申し込みます。
+match:
+  purposes: [fuel_cost]
+  fishery_types: [any]
+  applicant: [group]
+amount_note: （架空）値上がり分の 3/4
+deadline: null
+contact_note: 漁協の 窓口
+source_url: https://example.com/demo-nenryo
+checked_date: 2026-06-01
+checked_by: demo
+status: open

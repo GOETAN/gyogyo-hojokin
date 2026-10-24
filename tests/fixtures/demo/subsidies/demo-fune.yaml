@@ -1,0 +1,18 @@
+# 確認用の見本（npm run build:demo）の架空データ。実在の制度ではない。data/ に置かないこと。
+id: demo-fune
+name: （架空）漁船エンジン更新支援事業（見本）
+plain_name: （架空）船や エンジンの 補助
+level: prefecture
+provider: （架空）見本の 県
+summary_plain: （見本の 文です）古い 船の エンジンを 燃料の 少ない ものに かえる ときの 費用の 一部が 出ます。
+match:
+  purposes: [boat_engine]
+  fishery_types: [vessel, set_net]
+  applicant: [any]
+amount_note: 要確認
+deadline: 2030-01-31
+contact_note: 漁協の 窓口
+source_url: https://example.com/demo-fune
+checked_date: 2026-10-01
+checked_by: demo
+status: upcoming

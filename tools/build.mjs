@@ -1,9 +1,13 @@
 #!/usr/bin/env node
-// data/ と src/ から静的サイトを dist/ に作る。
+// data/ と src/ から静的サイトを dist/index.html の 1 ファイルに作る。
+// CSS と JS も HTML に埋め込むので、index.html をスマホやパソコンで直接開いても動く。
 // 検証エラーが1件でもあれば何も書き出さずに終了コード 1。
-// 使い方: node tools/build.mjs [-o 出力ディレクトリ]
+// 使い方: node tools/build.mjs [-o 出力ディレクトリ] [--demo]
+//   --demo: tests/fixtures/demo の架空データで、「見本」の帯つきの確認用ページを作る（公開しないこと）
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, mkdtempSync, copyFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadData, todayJST, ROOT, DATA_DIR } from './lib/data.mjs';
@@ -58,12 +62,45 @@ function subsidiesJson(subsidies, today) {
   return JSON.stringify(out).replace(/</g, '\\u003c');
 }
 
-export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist'), today = todayJST() } = {}) {
+// src/match.js（ES モジュール）と src/app.js を、HTML に埋め込める 1 本のスクリプトにする。
+// ファイルとして直接開いたとき（file://）はモジュールの読み込みがブラウザに止められるため。
+function bundleScript() {
+  const match = readFileSync(join(SRC_DIR, 'match.js'), 'utf8').replace(/^export\s+/gm, '');
+  const app = readFileSync(join(SRC_DIR, 'app.js'), 'utf8').replace(/^import\s.*from\s+'\.\/match\.js';\s*$/m, '');
+  const out = `(() => {\n${match}\n${app}\n})();\n`;
+  if (/^\s*(import|export)\b/m.test(out)) throw new Error('埋め込みスクリプトに import/export が残っています');
+  return out;
+}
+
+// CSP で、埋め込んだ <style> と <script> だけを許可するためのハッシュ。
+const cspHash = (text) => `'sha256-${createHash('sha256').update(text, 'utf8').digest('base64')}'`;
+
+// <style>/<script> の中身が途中で閉じられないことを確かめる。
+function assertEmbeddable(text, tag) {
+  if (new RegExp(`</${tag}`, 'i').test(text)) throw new Error(`埋め込む ${tag} の中に </${tag} があります`);
+  return text;
+}
+
+// 見本用の data ディレクトリ: 本物の site.yaml・questions.yaml と、tests/fixtures/demo の架空の補助金。
+function demoDataDir() {
+  const dir = mkdtempSync(join(tmpdir(), 'hojokin-demo-'));
+  mkdirSync(join(dir, 'subsidies'));
+  for (const f of ['site.yaml', 'questions.yaml']) copyFileSync(join(DATA_DIR, f), join(dir, f));
+  const src = resolve(ROOT, 'tests/fixtures/demo/subsidies');
+  for (const f of readdirSync(src)) copyFileSync(join(src, f), join(dir, 'subsidies', f));
+  return dir;
+}
+
+const DEMO_BANNER = '<p class="demo-banner" role="note">これは 確認用の 見本です。補助金の 内容は すべて 架空です。</p>';
+
+export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist'), today = todayJST(), demo = false } = {}) {
   const { site, questions, subsidies, errors } = await loadData(dataDir, { today });
   if (errors.length) {
     const lines = errors.map((e) => `✗ ${e.file} ${e.path}: ${e.msg}`);
     throw new Error(`検証エラー ${errors.length} 件。サイトは作りません。\n${lines.join('\n')}`);
   }
+  const style = assertEmbeddable(readFileSync(join(SRC_DIR, 'style.css'), 'utf8'), 'style');
+  const script = assertEmbeddable(bundleScript(), 'script');
   const html = render(readFileSync(join(SRC_DIR, 'index.html'), 'utf8'), {
     kumiai_name: site.kumiai_name,
     phone: site.phone,
@@ -73,22 +110,25 @@ export async function build({ dataDir = DATA_DIR, outDir = resolve(ROOT, 'dist')
   }, {
     questions: renderQuestions(questions),
     subsidies_json: subsidiesJson(subsidies, today),
+    style,
+    script,
+    style_hash: cspHash(style),
+    script_hash: cspHash(script),
+    demo_banner: demo ? DEMO_BANNER : '',
   });
   rmSync(outDir, { recursive: true, force: true });
   mkdirSync(outDir, { recursive: true });
   writeFileSync(join(outDir, 'index.html'), html);
-  for (const f of ['style.css', 'app.js', 'match.js']) {
-    writeFileSync(join(outDir, f), readFileSync(join(SRC_DIR, f)));
-  }
-  return { outDir };
+  return { outDir, file: join(outDir, 'index.html') };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const i = process.argv.indexOf('-o');
-  const outDir = i > -1 ? resolve(process.argv[i + 1]) : undefined;
+  const demo = process.argv.includes('--demo');
+  const outDir = i > -1 ? resolve(process.argv[i + 1]) : resolve(ROOT, demo ? 'dist-demo' : 'dist');
   try {
-    const r = await build({ outDir });
-    console.log(`✓ ${r.outDir} に書き出しました`);
+    const r = await build({ outDir, demo, ...(demo && { dataDir: demoDataDir() }) });
+    console.log(`✓ ${r.file} に書き出しました`);
   } catch (e) {
     console.error(e.message);
     process.exit(1);

@@ -1,0 +1,20 @@
+# 確認用の見本（npm run build:demo）の架空データ。実在の制度ではない。data/ に置かないこと。
+id: demo-setsubi
+name: （架空）漁業設備導入支援事業（見本）
+plain_name: （架空）機械や 設備の 補助
+level: national
+provider: （架空）見本の 機関
+summary_plain: （見本の 文です）漁で 使う 機械や 設備を 新しく 入れる ときの 費用の 一部が 出ます。
+match:
+  purposes: [equipment]
+  fishery_types: [any]
+  applicant: [any]
+amount_note: |-
+  （架空）補助率 1/2 以内
+  上限 100万円
+deadline: 2030-03-31
+contact_note: 漁協の 窓口
+source_url: https://example.com/demo-setsubi
+checked_date: 2026-10-01
+checked_by: demo
+status: open

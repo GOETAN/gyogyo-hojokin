@@ -19,16 +19,30 @@ data/schema.json          # データ定義の唯一の正（JSON Schema 2020-12
 data/site.yaml            # 協力漁協の名前・電話・受付時間（未記入だと検証が通らない）
 data/questions.yaml       # 質問と選択肢。value は schema.json と一致させる
 data/subsidies/*.yaml     # 補助金 1 件 1 ファイル。ファイル名 = id
-src/index.html            # 画面のひな形。{{key}} はビルド時に site.yaml の値（エスケープ済み）で置き換える
+src/index.html            # 画面のひな形。{{key}} はビルド時に site.yaml の値（エスケープ済み）で置き換える。
+                          # CSS・JS もビルド時にここへ埋め込み、dist/index.html 1 ファイルにする
 src/style.css             # 見た目。寸法は rem（端末の文字サイズ設定に追従する）
 src/app.js                # 画面の切り替えと結果の表示。状態は URL のハッシュだけに持つ（#q2/equipment など）
 src/match.js              # 絞り込み・締切・古さの判定。ブラウザ・ビルド・テストが共有する
 tools/lib/data.mjs        # 読み込みと検証。validate とビルドが共有する
 tools/validate.mjs        # 検証 CLI。エラーがあれば終了コード 1
-tools/build.mjs           # dist/ に静的サイトを作る。検証エラーがあれば何も書き出さない
+tools/build.mjs           # dist/index.html を作る。検証エラーがあれば何も書き出さない
+tests/fixtures/demo/      # 確認用の見本（build:demo）の架空データ。data/ に置かないこと
 tests/*.test.mjs          # 検証・ビルドのテスト（架空データのみ）
 tests/ui/                 # 360px 幅での画面チェック（Playwright + axe-core）。結果画面は架空データで検査
 ```
+
+## 手元で確かめる
+
+`npm run build` または `npm run build:demo` のあと、できた `index.html` をブラウザで直接開けばよい
+（サーバー不要。CSS・JS は HTML に埋め込んである）。スマホに送って開いてもよい。
+補助金の実データが 0 件のうちは、本物のビルドの結果画面は「じゅんびして います」になるので、
+画面の流れを見るときは見本（`dist-demo/index.html`）を使う。
+
+## 決めたこと
+
+- 読み上げボタン（ブラウザの音声合成）は作らない（2026-10-24 依頼者の判断）。
+  スマホの読み上げ機能（VoiceOver・TalkBack）で読めるよう、見出し・ボタン名・画面切り替え時のフォーカスは整えてある
 
 ## 検証
 
@@ -36,7 +50,8 @@ tests/ui/                 # 360px 幅での画面チェック（Playwright + axe
 npm ci
 npm test           # 検証・ビルドのテスト
 npm run validate   # data/ の検証
-npm run build      # dist/ に書き出す
+npm run build      # dist/index.html に書き出す（本物のデータ）
+npm run build:demo # dist-demo/index.html に書き出す（架空データ・「見本」の帯つき。公開しない）
 npm run test:ui    # 画面チェック（初回は npx playwright install chromium が必要）
 ```
 

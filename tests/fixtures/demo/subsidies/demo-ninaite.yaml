@@ -1,0 +1,18 @@
+# 確認用の見本（npm run build:demo）の架空データ。実在の制度ではない。data/ に置かないこと。
+id: demo-ninaite
+name: （架空）漁業担い手育成事業（見本）
+plain_name: （架空）跡継ぎ・新しく 始める人の 支援
+level: city
+provider: （架空）見本の 市
+summary_plain: （見本の 文です）新しく 漁業を 始める 人や 跡継ぎの 人が、技術を 学ぶ 間の 費用の 一部が 出ます。
+match:
+  purposes: [successor_newcomer]
+  fishery_types: [any]
+  applicant: [individual]
+amount_note: 要確認
+deadline: 2030-06-30
+contact_note: 市の 水産の 窓口、または 漁協
+source_url: https://example.com/demo-ninaite
+checked_date: 2026-10-01
+checked_by: demo
+status: open
