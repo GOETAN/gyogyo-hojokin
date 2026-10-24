@@ -7,15 +7,25 @@
 <meta name="referrer" content="no-referrer">
 <title>補助金あんない</title>
 <link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
 </head>
 <body>
 <div class="wrap">
   <main id="main">
     <section id="top" class="screen stack" aria-labelledby="top-title">
-      <h1 id="top-title">あなたに関係ありそうな <ruby>補助金<rt>ほじょきん</rt></ruby>を さがします</h1>
-      <p>3つの しつもんに、ボタンを おして こたえるだけです。</p>
+      <h1 id="top-title" tabindex="-1">あなたに関係ありそうな <ruby>補助金<rt>ほじょきん</rt></ruby>を さがします</h1>
+      <p>{{question_count}}つの しつもんに、ボタンを おして こたえるだけです。</p>
       <a class="btn btn-primary" href="#q1">はじめる</a>
       <p class="note">このサイトは ご案内です。使えるかどうかは、漁協に そうだんして ください。</p>
+      <noscript><p class="note">この画面は うごきません。下の ボタンから 漁協に 電話して ください。</p></noscript>
+    </section>
+
+{{{questions}}}
+
+    <section id="result" class="screen stack" hidden aria-labelledby="result-title">
+      <h1 id="result-title" tabindex="-1">けっか</h1>
+      <p>（この画面は じゅんびちゅうです）</p>
+      <a class="btn btn-secondary" data-back href="#top">もどる</a>
     </section>
   </main>
 

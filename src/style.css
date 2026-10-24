@@ -85,6 +85,14 @@ rt { font-size: 0.6em; }
 
 .btn-sub { font-weight: 400; }
 
+.btn-choice {
+  background: var(--bg);
+  color: var(--primary);
+  border: 3px solid var(--primary);
+}
+
+.btn-choice:active { background: var(--primary); color: #fff; }
+
 .btn-secondary {
   background: var(--bg);
   color: var(--text);
@@ -92,6 +100,10 @@ rt { font-size: 0.6em; }
 }
 
 .note { color: var(--muted); }
+
+.progress { color: var(--muted); font-weight: 700; }
+
+h1:focus { outline: none; }  /* 画面切り替え時にプログラムで移すフォーカス。見た目の枠は出さない */
 
 .actions {
   margin-top: 2rem;

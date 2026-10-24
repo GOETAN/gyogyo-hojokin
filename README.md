@@ -21,6 +21,7 @@ data/questions.yaml       # 質問と選択肢。value は schema.json と一致
 data/subsidies/*.yaml     # 補助金 1 件 1 ファイル。ファイル名 = id
 src/index.html            # 画面のひな形。{{key}} はビルド時に site.yaml の値（エスケープ済み）で置き換える
 src/style.css             # 見た目。寸法は rem（端末の文字サイズ設定に追従する）
+src/app.js                # 画面の切り替え。状態は URL のハッシュだけに持つ（#q2/equipment など）
 tools/lib/data.mjs        # 読み込みと検証。validate とビルドが共有する
 tools/validate.mjs        # 検証 CLI。エラーがあれば終了コード 1
 tools/build.mjs           # dist/ に静的サイトを作る。検証エラーがあれば何も書き出さない
@@ -65,6 +66,13 @@ status: open                   # open | upcoming | closed
 ```
 
 選択肢の値は `data/schema.json` の `$defs.purpose` / `fishery_type` / `applicant` を参照。
+
+## 画面の動き
+
+- 1 画面 1 問。選ぶとすぐ次へ進む（確認ボタンなし）。トップから結果まで 4 タップ
+- 答えは URL のハッシュに持つ。スマホの「戻る」で前の質問に戻れ、再読み込みしても消えない。Cookie・localStorage は使わない
+- 画面が切り替わった直後 0.5 秒のタップは無視する（2 度押しで次の質問まで答えてしまうのを防ぐ）
+- 知らない値が入った URL はトップに戻す
 
 ## 判定ルール（画面側。今後実装）
 
