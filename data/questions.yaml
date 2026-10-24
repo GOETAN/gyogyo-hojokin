@@ -1,27 +1,28 @@
 # 質問と選択肢。value は data/schema.json の purpose / fishery_type / applicant と一致させる。
 # value: unknown は「わからない」。その質問を絞り込みの条件にしない。
 # 文言は仮。人が確認してから公開する。
+# 語の区切りに半角スペースを入れる。改行はスペースの位置でだけ起きる（語の途中で折り返さない）。
 - key: purposes
   text: やりたいことは どれですか
   options:
-    - { value: boat_engine,        label: 船・エンジンを新しくしたい }
-    - { value: equipment,          label: 機械や設備を入れたい }
-    - { value: fuel_cost,          label: 燃料代などの負担を減らしたい }
-    - { value: successor_newcomer, label: 跡継ぎ・新しく漁業を始める人のこと }
-    - { value: processing_sales,   label: 魚を加工・販売したい }
+    - { value: boat_engine,        label: 船・エンジンを 新しくしたい }
+    - { value: equipment,          label: 機械や設備を 入れたい }
+    - { value: fuel_cost,          label: 燃料代などの 負担を 減らしたい }
+    - { value: successor_newcomer, label: 跡継ぎ・新しく 漁業を 始める人のこと }
+    - { value: processing_sales,   label: 魚を 加工・販売したい }
     - { value: unknown,            label: わからない }
 - key: fishery_types
   text: どんな漁業を していますか
   options:
-    - { value: vessel,            label: 船で魚をとる }
+    - { value: vessel,            label: 船で 魚をとる }
     - { value: aquaculture,       label: 養殖 }
     - { value: set_net,           label: 定置網 }
-    - { value: shellfish_seaweed, label: 貝・海藻をとる }
+    - { value: shellfish_seaweed, label: 貝・海藻を とる }
     - { value: other,             label: その他 }
     - { value: unknown,           label: わからない }
 - key: applicant
   text: だれと 取り組みますか
   options:
     - { value: individual, label: 自分ひとり }
-    - { value: group,      label: 仲間や漁協といっしょに }
+    - { value: group,      label: 仲間や 漁協と いっしょに }
     - { value: unknown,    label: わからない }

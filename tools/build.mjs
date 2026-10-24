@@ -28,7 +28,8 @@ function render(template, vars, raw = {}) {
   });
 }
 
-// 質問 1 問 = 1 画面。id は q1, q2, ...。表示の切り替えは src/app.js が行う。
+// 質問 1 問 = 1 画面。id は screen-q1, screen-q2, ...（ハッシュ #q1 と同じ id にしないこと。
+// 同じだとブラウザがその要素まで自動でスクロールし、画面上の電話リンクが隠れる）。表示の切り替えは src/app.js が行う。
 function renderQuestions(questions) {
   const total = questions.length;
   return questions.map((q, i) => {
@@ -36,7 +37,7 @@ function renderQuestions(questions) {
     const choices = q.options.map((o) =>
       `        <button type="button" class="btn btn-choice" data-value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</button>`,
     ).join('\n');
-    return `    <section id="q${n}" class="screen stack" data-step="${n}" hidden aria-labelledby="q${n}-title">
+    return `    <section id="screen-q${n}" class="screen stack" data-step="${n}" hidden aria-labelledby="q${n}-title">
       <p class="progress">しつもん ${n} / ${total}</p>
       <h1 id="q${n}-title" tabindex="-1">${escapeHtml(q.text)}</h1>
       <div class="stack" role="group" aria-labelledby="q${n}-title">

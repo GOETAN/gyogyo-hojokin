@@ -11,8 +11,12 @@
 </head>
 <body>
 <div class="wrap">
+  <header class="topbar">
+    <a class="btn btn-tel-mini" href="tel:{{tel}}" aria-label="漁協に電話する {{phone}}">漁協に電話する</a>
+  </header>
+
   <main id="main">
-    <section id="top" class="screen stack" aria-labelledby="top-title">
+    <section id="screen-top" class="screen stack" aria-labelledby="top-title">
       <h1 id="top-title" tabindex="-1">あなたに関係ありそうな <ruby>補助金<rt>ほじょきん</rt></ruby>を さがします</h1>
       <p>{{question_count}}つの しつもんに、ボタンを おして こたえるだけです。</p>
       <a class="btn btn-primary" href="#q1">はじめる</a>
@@ -22,7 +26,7 @@
 
 {{{questions}}}
 
-    <section id="result" class="screen stack" hidden aria-labelledby="result-title">
+    <section id="screen-result" class="screen stack" hidden aria-labelledby="result-title">
       <h1 id="result-title" tabindex="-1">けっか</h1>
       <p>（この画面は じゅんびちゅうです）</p>
       <a class="btn btn-secondary" data-back href="#top">もどる</a>

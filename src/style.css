@@ -27,7 +27,8 @@ body {
   font-family: system-ui, -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
   font-size: 1.25rem;        /* 20px */
   line-height: 1.7;
-  overflow-wrap: anywhere;   /* 長い語でも横スクロールを出さない */
+  word-break: keep-all;      /* 日本語でも語の途中で折り返さない。改行は文中の半角スペースの位置で起きる */
+  overflow-wrap: anywhere;   /* スペースのない長い語は、横スクロールを出すよりは途中で折り返す */
 }
 
 [hidden] { display: none !important; }
@@ -39,6 +40,7 @@ body {
 }
 
 h1 {
+  text-wrap: balance;
   font-size: 1.75rem;
   line-height: 1.5;
   margin: 0;
@@ -68,6 +70,7 @@ rt { font-size: 0.6em; }
   line-height: 1.4;
   text-align: center;
   text-decoration: none;
+  text-wrap: balance;        /* 行の長さをそろえる。非対応の端末では普通に折り返す */
 }
 
 .btn:focus-visible {
@@ -84,6 +87,16 @@ rt { font-size: 0.6em; }
 }
 
 .btn-sub { font-weight: 400; }
+
+/* 画面上の電話リンク。下の大きな電話ボタンがスクロールしないと見えない画面のため。
+   見た目は控えめにするが、文字の大きさとタップ領域は他のボタンと同じ基準を守る。 */
+.topbar { margin-bottom: 1.25rem; }
+
+.btn-tel-mini {
+  background: var(--bg);
+  color: var(--tel);
+  border: 3px solid var(--tel);
+}
 
 .btn-choice {
   background: var(--bg);

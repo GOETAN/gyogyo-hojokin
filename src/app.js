@@ -33,8 +33,8 @@
     if (id === 'top' && location.hash && location.hash !== '#top') {
       history.replaceState(null, '', '#top');
     }
-    for (const s of screens) s.hidden = s.id !== id;
-    const current = document.getElementById(id);
+    const current = document.getElementById(`screen-${id}`);
+    for (const s of screens) s.hidden = s !== current;
 
     // もどる: 1つ前の画面へ。直接このURLを開いた人でもサイトの外に出ないよう、history.back() は使わない。
     const back = current.querySelector('[data-back]');

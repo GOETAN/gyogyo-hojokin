@@ -9,7 +9,7 @@ import { open, base, AFTER_SCREEN_CHANGE_MS } from './helpers.mjs';
 const QUESTIONS = YAML.parse(readFileSync(new URL('../../data/questions.yaml', import.meta.url), 'utf8'));
 
 const visibleScreen = (page) =>
-  page.evaluate(() => [...document.querySelectorAll('main > .screen')].filter((s) => !s.hidden).map((s) => s.id));
+  page.evaluate(() => [...document.querySelectorAll('main > .screen')].filter((s) => !s.hidden).map((s) => s.id.replace(/^screen-/, '')));
 
 // 見えている画面の、指定ラベルのボタンをタップする。
 async function tap(page, label) {
@@ -23,7 +23,7 @@ test('トップから結果まで 4 タップ（5 タップ以内）', async () 
   const { context, page } = await open();
   let taps = 0;
   await tap(page, 'はじめる'); taps++;
-  await tap(page, '機械や設備を入れたい'); taps++;
+  await tap(page, '機械や設備を 入れたい'); taps++;
   await tap(page, '養殖'); taps++;
   await tap(page, '自分ひとり'); taps++;
   assert.deepEqual(await visibleScreen(page), ['result']);
@@ -46,9 +46,9 @@ test('どの質問にも「わからない」があり、選ぶと次へ進む',
 test('質問の選択肢は questions.yaml と同じ順・同じ文言', async () => {
   const { context, page } = await open();
   for (let i = 0; i < QUESTIONS.length; i++) {
-    const labels = await page.locator(`#q${i + 1} [data-value]`).allTextContents();
+    const labels = await page.locator(`#screen-q${i + 1} [data-value]`).allTextContents();
     assert.deepEqual(labels, QUESTIONS[i].options.map((o) => o.label));
-    assert.equal((await page.textContent(`#q${i + 1} h1`)).trim(), QUESTIONS[i].text);
+    assert.equal((await page.textContent(`#screen-q${i + 1} h1`)).trim(), QUESTIONS[i].text);
   }
   await context.close();
 });
@@ -68,7 +68,7 @@ test('「もどる」で 1 つ前の質問に、答えを保ったまま戻る',
 test('スマホの「戻る」（ブラウザの戻る）で前の画面に戻る', async () => {
   const { context, page } = await open();
   await tap(page, 'はじめる');
-  await tap(page, '船・エンジンを新しくしたい');
+  await tap(page, '船・エンジンを 新しくしたい');
   await page.goBack();
   assert.deepEqual(await visibleScreen(page), ['q1']);
   await page.goBack();
@@ -81,7 +81,7 @@ test('「最初からやりなおす」はトップ以外で出て、押すと�
   assert.equal(await page.isVisible('[data-restart]'), false);
   await tap(page, 'はじめる');
   assert.equal(await page.isVisible('[data-restart]'), true);
-  await tap(page, '船・エンジンを新しくしたい');
+  await tap(page, '船・エンジンを 新しくしたい');
   await Promise.all([page.waitForURL(base), page.locator('[data-restart]').tap()]);
   assert.deepEqual(await visibleScreen(page), ['top']);
   assert.equal(new URL(page.url()).hash, '');
@@ -107,7 +107,7 @@ test('おかしな URL（知らない値・答えの数の不一致）はトッ�
 test('2度押ししても次の質問まで答えてしまわない', async () => {
   const { context, page } = await open('#q1');
   await page.waitForTimeout(AFTER_SCREEN_CHANGE_MS);
-  const button = page.locator('#q1 [data-value="boat_engine"]');
+  const button = page.locator('#screen-q1 [data-value="boat_engine"]');
   const box = await button.boundingBox();
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   await page.touchscreen.tap(x, y);
@@ -131,7 +131,7 @@ test('全画面を通して、外部への通信・Cookie・保存・コンソ�
   await tap(page, 'はじめる');
   await tap(page, 'わからない');
   await tap(page, 'その他');
-  await tap(page, '仲間や漁協といっしょに');
+  await tap(page, '仲間や 漁協と いっしょに');
   assert.deepEqual(requests.filter((u) => !u.startsWith(base)), []);
   assert.deepEqual(await context.cookies(), []);
   assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);

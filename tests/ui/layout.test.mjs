@@ -66,11 +66,22 @@ for (const [name, path] of SCREENS) {
   });
 }
 
-test('電話ボタンは site.yaml の番号の tel: リンク', async () => {
+test('電話リンクはどれも site.yaml の番号の tel: リンク', async () => {
   const { context, page } = await open();
   const site = (await import('yaml')).default.parse(readFileSync(new URL('../../data/site.yaml', import.meta.url), 'utf8'));
-  const href = await page.getAttribute('.btn-tel', 'href');
-  assert.equal(href, `tel:${site.phone.replace(/\D/g, '')}`);
+  const hrefs = await page.locator('a[href^="tel:"]').evaluateAll((els) => els.map((e) => e.getAttribute('href')));
+  assert.equal(hrefs.length, 2);
+  for (const href of hrefs) assert.equal(href, `tel:${site.phone.replace(/\D/g, '')}`);
   assert.ok((await page.textContent('.btn-tel')).includes(site.phone));
+  assert.ok((await page.getAttribute('.btn-tel-mini', 'aria-label')).includes(site.phone));
   await context.close();
 });
+
+for (const [name, path] of SCREENS) {
+  test(`${name}: スクロールしなくても電話リンクが見えている（360×640）`, async () => {
+    const { context, page } = await open(path);
+    const box = await page.locator('.btn-tel-mini').boundingBox();
+    assert.ok(box && box.y >= 0 && box.y + box.height <= 640, `電話リンクの位置 ${JSON.stringify(box)}`);
+    await context.close();
+  });
+}
